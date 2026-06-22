@@ -2,7 +2,7 @@
 
 A desktop utility for repackaging Geometry Dash clients with custom GDPS server URLs.
 
-![Uploading image.png…]()
+<img width="917" height="677" alt="image" src="https://github.com/user-attachments/assets/17dacf0e-074b-47b1-a5f0-a74afd3f0929" />
 
 ## Features
 
