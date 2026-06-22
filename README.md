@@ -8,7 +8,7 @@ A desktop utility for repackaging Geometry Dash clients with custom GDPS server 
 
 - Repackages Windows, iOS, and Android Geometry Dash binaries
 - Drag and drop source files
-- Custom URL, name, and bundle ID
+- Ability to assign a bundle ID, application name, and automatic keystore generation
 - Automatic keystore generation for Android builds
 - Built-in log viewer
 
@@ -59,7 +59,7 @@ Open source.
 
 - Пересборка бинарников Windows, iOS и Android
 - Поддержка drag and drop
-- Свои URL, название и bundle ID
+- Возможность назначить bundle ID, имя приложения и автоматическая генерация keystore
 - Автоматическая генерация keystore для Android
 - Встроенный лог сборки
 
