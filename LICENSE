@@ -1,0 +1,88 @@
+MIT License
+
+Copyright (c) 2026 NeuroDevelop
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+THIRD-PARTY COMPONENTS
+
+This software bundles or invokes the following third-party tools at runtime.
+They are NOT distributed as source in this repository. Users must obtain them
+separately and place them in the `apk/` folder next to the executable.
+
+--------------------------------------------------------------------------------
+1. apktool (apk/tool.jar)
+   Version: 2.x
+   Author:  Connor Tumbleson, Brut.alll, JesusFreke, and contributors
+   License: Apache License 2.0
+   Source:  https://github.com/iBotPeaches/Apktool
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at:
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+--------------------------------------------------------------------------------
+2. uber-apk-signer (apk/signer.jar)
+   Version: 1.x
+   Author:  Patrick Favre-Bulle
+   License: Apache License 2.0
+   Source:  https://github.com/patrickfav/uber-apk-signer
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at:
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+================================================================================
+
+DEPENDENCIES
+
+This software uses the following NuGet package, which is restored automatically
+via .NET's package manager:
+
+- Portable.BouncyCastle 1.9.0
+  Author:  Legion of the Bouncy Castle Inc.
+  License: MIT License
+  Source:  https://www.bouncycastle.org/csharp/
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction.
+
+================================================================================
+
+TRADEMARK NOTICE
+
+"Geometry Dash" is a trademark of RobTop Games. This project is not affiliated
+with, endorsed by, or sponsored by RobTop Games. All references to "Geometry
+Dash" are used solely for descriptive purposes to identify the binary files
+that this tool repackages.

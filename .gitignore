@@ -1,0 +1,22 @@
+## Build output
+bin/
+obj/
+
+## IDE
+.vs/
+*.user
+*.suo
+
+## Rider
+.idea/
+
+## VS Code
+.vscode/
+
+## Publish profiles
+*.pubxml
+*.pubxml.user
+
+## OS
+Thumbs.db
+.DS_Store
