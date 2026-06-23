@@ -322,26 +322,28 @@ namespace GDPSMaker
                     bn += "0";
             }
 
+            bool ok;
             switch (pf)
             {
                 case pt.i:
-                    bi(fp2, pu, bn, tn);
+                    ok = bi(fp2, pu, bn, tn);
                     break;
                 case pt.w:
-                    bw(fp2, pu, tn);
+                    ok = bw(fp2, pu, tn);
                     break;
                 case pt.a:
-                    ba(fp2, pu, bn, tn);
+                    ok = ba(fp2, pu, bn, tn);
                     break;
                 default:
                     lg.ae("No platform detected.");
                     return;
             }
 
-            lg.as2("GDPS client created!");
+            if (ok)
+                lg.as2("GDPS client created!");
         }
 
-        private void bi(string si, string pu, string bn, string tn)
+        private bool bi(string si, string pu, string bn, string tn)
         {
             string wd = Path.Combine(Environment.CurrentDirectory, "dindetemp_ios");
             lg.ai("Extracting IPA");
@@ -358,25 +360,51 @@ namespace GDPSMaker
             if (File.Exists(oi2)) File.Delete(oi2);
             ZipFile.CreateFromDirectory(wd, oi2, CompressionLevel.NoCompression, false);
             Directory.Delete(wd, true);
+            if (!File.Exists(oi2))
+                throw new FileNotFoundException("Output IPA was not created.", oi2);
             lg.ai("Saved: " + oi2);
+            return true;
         }
 
-        private void bw(string se, string pu, string tn)
+        private bool bw(string se, string pu, string tn)
         {
-            string pp2 = Path.GetDirectoryName(se) ?? Environment.CurrentDirectory;
-            string te = Path.Combine(pp2, tn + ".exe");
+            string pp2 = Path.GetDirectoryName(se) ?? AppDir();
+            string te = Path.Combine(pp2, SafeFileName(tn) + ".exe");
             bp.gf(se, pu, string.Empty, tn, te);
+            if (!File.Exists(te))
+                throw new FileNotFoundException("Output EXE was not created.", te);
             lg.ai("Saved: " + te);
+            return true;
         }
 
-        private void ba(string sa, string pu, string bn, string tn)
+        private static string AppDir()
         {
-            string kp = Path.Combine(Environment.CurrentDirectory, "gdps.keystore");
+            return Path.GetDirectoryName(Application.ExecutablePath)
+                ?? AppContext.BaseDirectory
+                ?? Environment.CurrentDirectory;
+        }
+
+        private static string SafeFileName(string name)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                name = name.Replace(c, '_');
+            return string.IsNullOrWhiteSpace(name) ? "GDPS" : name.Trim();
+        }
+
+        private static string Q(string value)
+        {
+            return "\"" + value.Replace("\"", "\\\"") + "\"";
+        }
+
+        private bool ba(string sa, string pu, string bn, string tn)
+        {
+            string appDir = AppDir();
+            string kp = Path.Combine(appDir, "gdps.keystore");
             if (!File.Exists(kp))
             {
                 lg.ai("No keystore found. Generating a new one...");
                 string np = md.Input(this, "Keystore Password", "Enter a password for the new keystore:");
-                if (string.IsNullOrEmpty(np)) { lg.aw("Build cancelled."); return; }
+                if (string.IsNullOrEmpty(np)) { lg.aw("Build cancelled."); return false; }
                 string na = md.Input(this, "Key Alias", "Enter a key alias (e.g., myalias):", "myalias");
                 if (string.IsNullOrEmpty(na)) na = "myalias";
                 try
@@ -385,7 +413,7 @@ namespace GDPSMaker
                     if (!File.Exists(kp))
                     {
                         lg.ae("Auto keystore generation failed.");
-                        return;
+                        return false;
                     }
                     lg.as2("Keystore generated: gdps.keystore");
                     pw = np;
@@ -394,14 +422,14 @@ namespace GDPSMaker
                 catch (Exception ex)
                 {
                     lg.ae("Auto keystore generation failed: " + ex.Message);
-                    return;
+                    return false;
                 }
             }
 
             if (string.IsNullOrEmpty(pw))
             {
                 pw = md.Input(this, "Keystore Password", "Enter your keystore password:");
-                if (string.IsNullOrEmpty(pw)) { lg.aw("Build cancelled."); return; }
+                if (string.IsNullOrEmpty(pw)) { lg.aw("Build cancelled."); return false; }
             }
             if (string.IsNullOrEmpty(ka))
             {
@@ -415,20 +443,22 @@ namespace GDPSMaker
                 if (jc2 != 0)
                 {
                     lg.ae("Java not detected! Add it to PATH to build Android APKs.");
-                    return;
+                    return false;
                 }
             }
             catch
             {
                 lg.ae("Java not detected! Add it to PATH to build Android APKs.");
-                return;
+                return false;
             }
 
-            string ap2 = Path.Combine(Environment.CurrentDirectory, "apk");
+            string ap2 = Path.Combine(appDir, "apk");
+            string toolJar = Path.Combine(ap2, "tool.jar");
+            string signerJar = Path.Combine(ap2, "signer.jar");
             lg.ai("Extracting APK");
             if (!Directory.Exists(ap2))
             {
-                lg.ae("apk folder missing. Copy it next to this exe.");
+                lg.ae("apk folder missing. Copy it next to this exe: " + ap2);
                 try
                 {
                     Process.Start(new ProcessStartInfo
@@ -438,13 +468,28 @@ namespace GDPSMaker
                     });
                 }
                 catch { }
-                return;
+                return false;
+            }
+            if (!File.Exists(toolJar))
+            {
+                lg.ae("apktool jar missing: " + toolJar);
+                return false;
+            }
+            if (!File.Exists(signerJar))
+            {
+                lg.ae("signer jar missing: " + signerJar);
+                return false;
             }
 
-            string dd = Path.Combine(Environment.CurrentDirectory, "apkedit");
+            string outDir = Path.GetDirectoryName(sa) ?? appDir;
+            string workRoot = Path.Combine(Path.GetTempPath(), "GDPSMaker");
+            Directory.CreateDirectory(workRoot);
+            string dd = Path.Combine(workRoot, "apkedit");
             if (Directory.Exists(dd)) Directory.Delete(dd, true);
             lg.ai("Decompiling APK with apktool");
-            rn.df("java", "-jar apk\\tool.jar d \"" + sa + "\" -o apkedit");
+            int decompileCode = rn.df("java", "-jar " + Q(toolJar) + " d " + Q(sa) + " -o " + Q(dd) + " -f", workRoot);
+            if (decompileCode != 0 || !Directory.Exists(dd))
+                throw new Exception("apktool decompile failed with exit code " + decompileCode);
 
             string sf = Path.Combine(dd, "res", "values", "strings.xml");
             string yf = Path.Combine(dd, "apktool.yml");
@@ -474,32 +519,72 @@ namespace GDPSMaker
             }
 
             lg.ai("Rebuilding APK");
-            string bt = Path.Combine(Environment.CurrentDirectory, "build_temp.apk");
+            string bt = Path.Combine(workRoot, "build_temp.apk");
             if (File.Exists(bt)) File.Delete(bt);
-            rn.df("java", "-jar apk\\tool.jar b apkedit -o build_temp.apk");
+            int buildCode = rn.df("java", "-jar " + Q(toolJar) + " b " + Q(dd) + " -o " + Q(bt), workRoot);
+            if (buildCode != 0 || !File.Exists(bt))
+                throw new Exception("apktool build failed with exit code " + buildCode);
 
-            string oa = Path.Combine(Environment.CurrentDirectory, tn + ".apk");
+            string oa = Path.Combine(outDir, SafeFileName(tn) + ".apk");
             if (File.Exists(oa)) File.Delete(oa);
 
             lg.ai("Aligning and signing APK");
-            rn.df("java",
-                "-jar apk\\signer.jar --apks build_temp.apk --ks \"" + kp + "\" --ksPass pass:" + pw + " --ksKeyAlias " + ka + " --ksKeyPass pass:" + pw + " --out .");
+            int signCode = rn.df("java",
+                "-jar " + Q(signerJar) +
+                " --apks " + Q(bt) +
+                " --ks " + Q(kp) +
+                " --ksPass pass:" + pw +
+                " --ksKeyAlias " + Q(ka) +
+                " --ksKeyPass pass:" + pw +
+                " --out " + Q(workRoot),
+                workRoot);
+            if (signCode != 0)
+                throw new Exception("APK signing failed with exit code " + signCode);
 
-            string sga = Path.Combine(Environment.CurrentDirectory, "build_temp-aligned-signed.apk");
-            if (File.Exists(sga))
+            string[] candidates =
             {
-                File.Move(sga, oa);
-            }
-            else
+                Path.Combine(workRoot, "build_temp-aligned-signed.apk"),
+                Path.Combine(workRoot, "build_temp_signed.apk"),
+                Path.Combine(workRoot, "build_temp-aligned-debugSigned.apk"),
+                Path.Combine(workRoot, "build_temp-debugSigned.apk")
+            };
+
+            string? signedApk = null;
+            foreach (string c in candidates)
             {
-                string sga2 = Path.Combine(Environment.CurrentDirectory, "build_temp_signed.apk");
-                if (File.Exists(sga2))
-                    File.Move(sga2, oa);
+                if (File.Exists(c))
+                {
+                    signedApk = c;
+                    break;
+                }
             }
+
+            if (signedApk == null)
+            {
+                string[] produced = Directory.GetFiles(workRoot, "*.apk");
+                foreach (string c in produced)
+                {
+                    if (!string.Equals(c, bt, StringComparison.OrdinalIgnoreCase))
+                    {
+                        signedApk = c;
+                        break;
+                    }
+                }
+            }
+
+            if (signedApk == null)
+                throw new FileNotFoundException("Signed APK was not created by signer.jar.");
+
+            File.Move(signedApk, oa);
+
             if (File.Exists(bt)) File.Delete(bt);
-
             if (Directory.Exists(dd)) Directory.Delete(dd, true);
+
+            if (!File.Exists(oa))
+                throw new FileNotFoundException("Final APK was not created.", oa);
+
             lg.ai("Saved: " + oa);
+            return true;
         }
 
 
